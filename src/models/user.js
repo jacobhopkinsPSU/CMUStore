@@ -5,14 +5,14 @@ const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema(
   {
-    // Name of user
+    // Name of user (must be unique)
     name: {
       type: String,
       required: true,
       trim: true,
       unique: true,
     },
-    // Email of user
+    // Email of user (must be unique)
     email: {
       type: String,
       required: true,
@@ -31,16 +31,23 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 5,
     },
+
+    // Grade level
     grade: {
       type: Number,
       required: true,
+      // Fancy regex to limit grades
       validate: /^([9]|1[012])$/,
     },
+
+    // User roles (default is unverified)
     role: {
       type: String,
       default: 'unverified',
       enum: ['unverified', 'verified', 'admin'],
     },
+
+    // JWT Tokens
     tokens: [
       {
         token: {
@@ -50,6 +57,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
+  // Add timestamps for future functionality
   {
     timestamps: true,
   },
@@ -66,6 +74,17 @@ userSchema.pre('save', async function hashPass(next) {
   next();
 });
 
+userSchema.methods.toJSON = function JSONSettings() {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
+// Generate JWTs
 userSchema.methods.generateAuthToken = async function genAuth() {
   const user = this;
 
@@ -78,6 +97,7 @@ userSchema.methods.generateAuthToken = async function genAuth() {
   return token;
 };
 
+// Find a user by email then verify that the passwords match
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });
 

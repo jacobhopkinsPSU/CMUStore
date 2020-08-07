@@ -11,6 +11,7 @@ router.post('/users', async (req, res) => {
   // Make sure that users can't change user role to admin
   user.role = 'unverified';
 
+  // Try to save the user and add a JWT
   try {
     await user.save();
 
@@ -22,12 +23,14 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.post('/users/login', auth, async (req, res) => {
+// Login user and create a new JWT
+router.post('/users/login', async (req, res) => {
   try {
     const user = await User.findByCredentials(
-      req.user.email,
-      req.user.password,
+      req.body.email,
+      req.body.password,
     );
+
     const token = await user.generateAuthToken();
     res.send({ user, token });
   } catch (e) {
@@ -35,18 +38,21 @@ router.post('/users/login', auth, async (req, res) => {
   }
 });
 
+// Logout the user and get rid of the current JWT
 router.post('/users/logout', auth, async (req, res) => {
   try {
     req.user.tokens = req.user.tokens.filter(
-      (token) => token.token !== req.tokens,
+      (token) => token.token !== req.token,
     );
-
     await req.user.save();
+
+    res.send();
   } catch (e) {
     res.status(500).send();
   }
 });
 
+// Get all current user data
 router.get('/users/me', auth, async (req, res) => {
   res.send(req.user);
 });
