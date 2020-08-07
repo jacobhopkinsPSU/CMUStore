@@ -74,6 +74,7 @@ userSchema.pre('save', async function hashPass(next) {
   next();
 });
 
+// Get rid of sensitive info when sending back user info
 userSchema.methods.toJSON = function JSONSettings() {
   const user = this;
   const userObject = user.toObject();
