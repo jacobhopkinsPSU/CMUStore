@@ -31,6 +31,10 @@ router.post('/users/login', async (req, res) => {
       req.body.password,
     );
 
+    if (!user.can('user:login')) {
+      throw new Error('User does not have permission');
+    }
+
     const token = await user.generateAuthToken();
     res.send({ user, token });
   } catch (e) {

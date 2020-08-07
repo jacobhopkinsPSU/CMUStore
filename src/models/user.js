@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const roleDef = require('../roleDef');
 
 const userSchema = new mongoose.Schema(
   {
@@ -113,6 +114,21 @@ userSchema.statics.findByCredentials = async (email, password) => {
   }
 
   return user;
+};
+
+// Check to see if a user can perform an operation
+userSchema.methods.can = function userCan(operation) {
+  const user = this;
+
+  if (!roleDef[user.role]) {
+    throw new Error('Role does not exist!');
+  }
+
+  if (roleDef[user.role].can.includes(operation)) {
+    return true;
+  }
+
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);
