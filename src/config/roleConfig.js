@@ -7,7 +7,7 @@ const roleDefs = {
     can: ['item:purchase', 'user:login'],
   },
   admin: {
-    can: ['item:modify', 'item:purchase', 'user:login'],
+    can: ['item:purchase', 'user:login', 'item:modify', 'item:create'],
   },
 };
 

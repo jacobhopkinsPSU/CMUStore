@@ -44,11 +44,6 @@ const userSchema = new mongoose.Schema(
       enum: ['unverified', 'verified', 'admin'],
     },
 
-    // User email verification token
-    verToken: {
-      type: String,
-    },
-
     // JWT Tokens
     tokens: [
       {

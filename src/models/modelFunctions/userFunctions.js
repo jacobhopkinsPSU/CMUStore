@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const roleDef = require('../../config/roleConfig');
 
 module.exports = function userFunction(userSchema) {
@@ -57,17 +56,6 @@ module.exports = function userFunction(userSchema) {
     await user.save();
 
     return token;
-  };
-
-  // Generate user verification token
-  schema.methods.generateVerToken = async function genVer() {
-    const user = this;
-
-    const token = crypto.randomBytes(48).toString('hex');
-
-    user.verToken = token;
-
-    await user.save();
   };
 
   // Find a user by email then verify that the passwords match
