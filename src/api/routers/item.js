@@ -19,3 +19,5 @@ router.post('/items', auth, async (req, res) => {
     res.status(400).send(e);
   }
 });
+
+module.exports = router;
