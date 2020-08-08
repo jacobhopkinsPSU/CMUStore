@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const roleDef = require('../config/roleConfig');
 
 const userSchema = new mongoose.Schema(
@@ -41,11 +42,15 @@ const userSchema = new mongoose.Schema(
       validate: /^([9]|1[012])$/,
     },
 
-    // User roles (default is unverified)
+    // User roles (forced to unverified at creation)
     role: {
       type: String,
-      default: 'unverified',
       enum: ['unverified', 'verified', 'admin'],
+    },
+
+    // User email verification token
+    verToken: {
+      type: String,
     },
 
     // JWT Tokens
@@ -75,6 +80,21 @@ userSchema.pre('save', async function hashPass(next) {
   next();
 });
 
+// Check to see if a user can perform an operation
+userSchema.methods.can = function userCan(operation) {
+  const user = this;
+
+  if (!roleDef[user.role]) {
+    throw new Error('Role does not exist!');
+  }
+
+  if (roleDef[user.role].can.includes(operation)) {
+    return true;
+  }
+
+  return false;
+};
+
 // Get rid of sensitive info when sending back user info
 userSchema.methods.toJSON = function JSONSettings() {
   const user = this;
@@ -99,6 +119,17 @@ userSchema.methods.generateAuthToken = async function genAuth() {
   return token;
 };
 
+// Generate user verification token
+userSchema.methods.generateVerToken = async function genVer() {
+  const user = this;
+
+  const token = crypto.randomBytes(48).toString('base64').replace('/', '-');
+
+  user.verToken = token;
+
+  await user.save();
+};
+
 // Find a user by email then verify that the passwords match
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });
@@ -114,21 +145,6 @@ userSchema.statics.findByCredentials = async (email, password) => {
   }
 
   return user;
-};
-
-// Check to see if a user can perform an operation
-userSchema.methods.can = function userCan(operation) {
-  const user = this;
-
-  if (!roleDef[user.role]) {
-    throw new Error('Role does not exist!');
-  }
-
-  if (roleDef[user.role].can.includes(operation)) {
-    return true;
-  }
-
-  return false;
 };
 
 const User = mongoose.model('User', userSchema);
