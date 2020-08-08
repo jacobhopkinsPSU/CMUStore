@@ -7,7 +7,7 @@ const router = new express.Router();
 // Create an item
 router.post('/items', auth, async (req, res) => {
   try {
-    if (!req.user.role === 'admin') {
+    if (!req.user.can('item:create')) {
       throw new Error('User must be an admin!');
     }
 
