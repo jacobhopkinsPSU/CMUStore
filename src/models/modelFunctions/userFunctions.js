@@ -63,7 +63,7 @@ module.exports = function userFunction(userSchema) {
   schema.methods.generateVerToken = async function genVer() {
     const user = this;
 
-    const token = crypto.randomBytes(48).toString('base64').replace('/', '-');
+    const token = crypto.randomBytes(48).toString('hex');
 
     user.verToken = token;
 
