@@ -12,7 +12,7 @@ const verTokenSchema = new mongoose.Schema({
   expire_at: {
     type: Date,
     default: Date.now,
-    expires: 3600,
+    expires: 43200,
   },
 });
 

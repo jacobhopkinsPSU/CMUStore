@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const roleDef = require('../../config/roleConfig');
+const { ErrorHandler } = require('../../utils/error');
 
 module.exports = function userFunction(userSchema) {
   const schema = userSchema;
@@ -21,7 +22,8 @@ module.exports = function userFunction(userSchema) {
     const user = this;
 
     if (!roleDef[user.role]) {
-      throw new Error('Role does not exist!');
+      user.role = 'unverified';
+      throw new ErrorHandler(500, 'Role does not exist, set to unverified');
     }
 
     if (roleDef[user.role].can.includes(operation)) {
@@ -63,13 +65,13 @@ module.exports = function userFunction(userSchema) {
     const user = await this.findOne({ email });
 
     if (!user) {
-      throw new Error('Unable to login');
+      throw new ErrorHandler(400, 'User failed to login');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new Error('Unable to login');
+      throw new ErrorHandler(400, 'User failed to login');
     }
 
     return user;
