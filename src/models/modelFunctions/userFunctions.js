@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const roleDef = require('../../config/roleConfig');
+const roleDef = require('../../utils/roleConfig');
 const { ErrorHandler } = require('../../utils/error');
 
 module.exports = function userFunction(userSchema) {
