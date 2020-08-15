@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../middlewares/userAuth');
 const Item = require('../../models/item');
+const { ErrorHandler, handleError } = require('../../utils/error');
 
 const router = new express.Router();
 
@@ -8,7 +9,7 @@ const router = new express.Router();
 router.post('/items', auth, async (req, res) => {
   try {
     if (!req.user.can('item:create')) {
-      throw new Error('User must be an admin!');
+      throw new ErrorHandler(403, 'User must be an admin');
     }
 
     const item = new Item(req.body);
@@ -18,6 +19,11 @@ router.post('/items', auth, async (req, res) => {
   } catch (e) {
     res.status(400).send(e);
   }
+});
+
+// eslint-disable-next-line no-unused-vars
+router.use((err, req, res, next) => {
+  handleError(err, res);
 });
 
 module.exports = router;

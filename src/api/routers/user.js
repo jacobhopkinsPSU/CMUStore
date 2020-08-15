@@ -67,7 +67,29 @@ router.get('/users/me', auth, async (req, res) => {
 
 // eslint-disable-next-line no-unused-vars
 router.use((err, req, res, next) => {
-  handleError(err, res);
+  // Handle cases for duplicate entries and validation errors
+  if (err.message.indexOf('11000') !== -1) {
+    const newError = {
+      statusCode: 409,
+      message: 'Username or email is already in use',
+    };
+    handleError(newError, res);
+  } else if (err.errors) {
+    // Create an array of messages and add each validation error to it
+    const messageArr = [];
+    Object.keys(err.errors).forEach((e) => {
+      messageArr.push(err.errors[e].properties.message);
+    });
+
+    const newError = {
+      statusCode: 400,
+      message: messageArr,
+    };
+
+    handleError(newError, res);
+  } else {
+    handleError(err, res);
+  }
 });
 
 module.exports = router;

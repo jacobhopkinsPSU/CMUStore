@@ -6,14 +6,14 @@ const userSchema = new mongoose.Schema(
     // Name of user (must be unique)
     name: {
       type: String,
-      required: true,
+      required: [true, 'Username must be included'],
       trim: true,
       unique: true,
     },
     // Email of user (must be unique)
     email: {
       type: String,
-      required: true,
+      required: [true, 'Email must be included'],
       trim: true,
       unique: true,
       // Make sure that email is real and has a school domain
@@ -26,16 +26,16 @@ const userSchema = new mongoose.Schema(
     // User password (will hash when saved)
     password: {
       type: String,
-      required: true,
-      minlength: 5,
+      required: [true, 'Password must be included'],
+      minlength: [5, 'Password must be 5 characters or longer'],
     },
 
     // Grade level
     grade: {
       type: Number,
-      required: true,
+      required: [true, 'Grade number must be included'],
       // Fancy regex to limit grades
-      validate: /^([9]|1[012])$/,
+      validate: [/^([9]|1[012])$/, 'Grade must be between 9 and 12'],
     },
 
     // User roles (forced to unverified at creation)
