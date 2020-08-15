@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../../models/user');
+const { ErrorHandler } = require('../../utils/error');
 
 // Authenticate the user's JWT
 const auth = async (req, res, next) => {
@@ -13,14 +14,14 @@ const auth = async (req, res, next) => {
     });
 
     if (!user) {
-      throw new Error();
+      throw new ErrorHandler(401, 'User must be authenticated');
     }
 
     req.token = token;
     req.user = user;
     next();
-  } catch (e) {
-    res.status(401).send({ error: 'Please authenticate.' });
+  } catch (err) {
+    next(err);
   }
 };
 
