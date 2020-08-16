@@ -76,14 +76,17 @@ router.use((err, req, res, next) => {
     handleError(newError, res);
   } else if (err.errors) {
     // Create an array of messages and add each validation error to it
-    const messageArr = [];
+    const valErrorArr = [];
     Object.keys(err.errors).forEach((e) => {
-      messageArr.push(err.errors[e].properties.message);
+      valErrorArr.push({
+        type: e,
+        message: err.errors[e].properties.message,
+      });
     });
 
     const newError = {
       statusCode: 400,
-      message: messageArr,
+      message: valErrorArr,
     };
 
     handleError(newError, res);
