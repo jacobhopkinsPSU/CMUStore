@@ -1,1 +1,0 @@
-// User verification email sender

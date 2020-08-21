@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const express = require('express');
 const User = require('../../models/user');
 const VerToken = require('../../models/verToken');
@@ -11,17 +12,14 @@ router.post('/users', async (req, res, next) => {
   try {
     const user = new User(req.body);
 
-    // Make sure that users can't change user role to admin
+    // Make user role unverified by default
     user.role = 'unverified';
 
-    // Try to save the user and add JWT and email verification token
-
+    // Try to save the user and add email verification token
     await user.save();
 
-    const token = await user.generateAuthToken();
-    // eslint-disable-next-line no-underscore-dangle
     await VerToken.generateVerToken(user._id);
-    res.status(201).send({ user, token });
+    res.status(201).send();
   } catch (err) {
     next(err);
   }
@@ -40,7 +38,7 @@ router.post('/users/login', async (req, res, next) => {
     }
 
     const token = await user.generateAuthToken();
-    res.send({ user, token });
+    res.send({ token });
   } catch (err) {
     next(err);
   }
@@ -60,9 +58,44 @@ router.post('/users/logout', auth, async (req, res, next) => {
   }
 });
 
-// Get all current user data
-router.get('/users/me', auth, async (req, res) => {
-  res.send(req.user);
+router.post('/users/verify/generate', async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new ErrorHandler(404, 'No users exist with that email');
+    }
+
+    const oldVerToken = await VerToken.findOne({ owner: user._id });
+    if (oldVerToken) {
+      oldVerToken.deleteOne();
+    }
+
+    VerToken.generateVerToken(user._id);
+
+    res.send(200);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Verify the user when they click on the link
+router.get('/users/verify/:verToken', async (req, res, next) => {
+  const { verToken } = req.params;
+  try {
+    const token = await VerToken.findOne({ value: verToken });
+    if (!token) {
+      res.render('expired');
+    } else {
+      const user = await User.findOne({ _id: token.owner });
+      user.role = 'verified';
+      await user.save();
+      res.render('verified');
+    }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // eslint-disable-next-line no-unused-vars
@@ -71,7 +104,10 @@ router.use((err, req, res, next) => {
   if (err.message.indexOf('11000') !== -1) {
     const newError = {
       statusCode: 409,
-      message: 'Username or email is already in use',
+      message: {
+        type: 'conflict',
+        info: 'Username or email is already in use',
+      },
     };
     handleError(newError, res);
   } else if (err.errors) {
@@ -80,7 +116,7 @@ router.use((err, req, res, next) => {
     Object.keys(err.errors).forEach((e) => {
       valErrorArr.push({
         type: e,
-        message: err.errors[e].properties.message,
+        info: err.errors[e].properties.message,
       });
     });
 

@@ -5,17 +5,13 @@ module.exports = function verTokenFunctions(verTokenSchema) {
 
   schema.statics.generateVerToken = async function genVer(id) {
     const VerToken = this;
-    const tokenValue = crypto.randomBytes(48).toString('hex');
-    const duplicateToken = await VerToken.findOne({ value: tokenValue });
+    const tokenValue = id + crypto.randomBytes(16).toString('hex');
 
-    if (!duplicateToken) {
-      const token = new VerToken({
-        owner: id,
-        value: tokenValue,
-      });
-      await token.save();
-    } else {
-      VerToken.generateVerToken();
-    }
+    const token = new VerToken({
+      owner: id,
+      value: tokenValue,
+    });
+
+    await token.save();
   };
 };

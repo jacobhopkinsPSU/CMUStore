@@ -6,6 +6,10 @@ const itemSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  description: {
+    type: String,
+    required: true,
+  },
   category: {
     type: String,
     required: true,
