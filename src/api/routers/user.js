@@ -74,7 +74,7 @@ router.post('/users/verify/generate', async (req, res, next) => {
 
     VerToken.generateVerToken(user._id);
 
-    res.send(200);
+    res.send();
   } catch (err) {
     next(err);
   }
