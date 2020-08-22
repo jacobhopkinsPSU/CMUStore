@@ -58,6 +58,7 @@ router.post('/users/logout', auth, async (req, res, next) => {
   }
 });
 
+// Generate a new verification token
 router.post('/users/verify/generate', async (req, res, next) => {
   const { email } = req.body;
   try {
