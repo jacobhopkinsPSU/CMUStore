@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const pug = require('pug');
 const path = require('path');
 const { google } = require('googleapis');
-const { ErrorHandler } = require('../utils/error');
+const { ErrorHandler } = require('./error');
 
 const { OAuth2 } = google.auth;
 

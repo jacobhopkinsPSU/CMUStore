@@ -1,7 +1,7 @@
 const express = require('express');
-const auth = require('../middlewares/userAuth');
-const Item = require('../../models/item');
-const { ErrorHandler, handleError } = require('../../utils/error');
+const auth = require('./middlewares/userAuth');
+const Item = require('../models/item');
+const { ErrorHandler, handleError } = require('../utils/error');
 
 const router = new express.Router();
 

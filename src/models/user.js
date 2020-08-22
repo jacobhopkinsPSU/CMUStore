@@ -60,8 +60,8 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-require('./modelFunctions/userFunctions')(userSchema);
+require('../methods/user')(userSchema);
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+exports.userModel = User;

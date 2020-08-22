@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
-const User = require('../../models/user');
-const VerToken = require('../../models/verToken');
-const auth = require('../middlewares/userAuth');
-const { handleError, ErrorHandler } = require('../../utils/error');
+const User = require('../models/user');
+const VerToken = require('../models/verToken');
+const auth = require('./middlewares/userAuth');
+const { handleError, ErrorHandler } = require('../utils/error');
 
 const router = new express.Router();
 

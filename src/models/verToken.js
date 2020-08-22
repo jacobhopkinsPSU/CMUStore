@@ -16,7 +16,7 @@ const verTokenSchema = new mongoose.Schema({
   },
 });
 
-require('./modelFunctions/verTokenFunctions')(verTokenSchema);
+require('../methods/verToken')(verTokenSchema);
 
 const VerToken = mongoose.model('Tokens', verTokenSchema);
 
