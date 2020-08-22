@@ -1,5 +1,8 @@
 const nodemailer = require('nodemailer');
+const pug = require('pug');
+const path = require('path');
 const { google } = require('googleapis');
+const { ErrorHandler } = require('../utils/error');
 
 const { OAuth2 } = google.auth;
 
@@ -31,16 +34,16 @@ const smtpTransport = nodemailer.createTransport({
 
 const mailOptions = {
   from: process.env.NODEMAILER_EMAIL,
-  to: 'email@example.com',
+  to: 'user@example.com',
   subject: 'Test',
-  text: 'Test email',
+  html: pug.renderFile(path.join(__dirname, '../views/pages/email.pug'), {
+    user: 'Jacob',
+  }),
 };
 
-smtpTransport.sendMail(mailOptions, (error, res) => {
+smtpTransport.sendMail(mailOptions, (error) => {
   if (error) {
-    console.log(error);
-  } else {
-    console.log(res);
+    ErrorHandler(500, 'Unable to send email');
   }
   smtpTransport.close();
 });

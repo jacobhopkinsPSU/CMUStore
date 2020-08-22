@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
     // Name of user (must be unique)
     name: {
       type: String,
-      required: [true, 'Username must be included'],
+      required: [true, 'Name must be included'],
       trim: true,
       unique: true,
     },

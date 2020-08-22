@@ -88,14 +88,14 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
     const token = await VerToken.findOne({ value: verToken });
 
     if (!token) {
-      res.render('expired');
+      res.render('pages/expired');
     } else {
       const user = await User.findOne({ _id: token.owner });
 
       user.role = 'verified';
       await user.save();
 
-      res.render('verified');
+      res.render('pages/verified', { user: user.name });
     }
   } catch (err) {
     next(err);

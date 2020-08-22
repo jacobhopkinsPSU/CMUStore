@@ -1,22 +1,18 @@
 const express = require('express');
-const handlebars = require('express-handlebars');
 
 require('./db/mongoose');
 const userRouter = require('./api/routers/user');
 const itemRouter = require('./api/routers/item');
 
+// Start express
 const app = express();
 const port = process.env.PORT;
 
-app.engine(
-  'handlebars',
-  handlebars({
-    defaultLayout: false,
-  }),
-);
-app.set('view engine', 'handlebars');
+// Set up ejs as the view engine
 app.set('views', `${__dirname}/views`);
+app.set('view engine', 'pug');
 
+app.use(express.static('./public'));
 app.use(express.json());
 app.use(userRouter);
 app.use(itemRouter);
