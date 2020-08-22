@@ -64,7 +64,7 @@ router.post('/users/verify/generate', async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new ErrorHandler(404, 'No users exist with that email');
+      throw new ErrorHandler(404, 'Invalid email');
     }
 
     const oldVerToken = await VerToken.findOne({ owner: user._id });
@@ -85,12 +85,15 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
   const { verToken } = req.params;
   try {
     const token = await VerToken.findOne({ value: verToken });
+
     if (!token) {
       res.render('expired');
     } else {
       const user = await User.findOne({ _id: token.owner });
+
       user.role = 'verified';
       await user.save();
+
       res.render('verified');
     }
   } catch (err) {
@@ -106,7 +109,7 @@ router.use((err, req, res, next) => {
       statusCode: 409,
       message: {
         type: 'conflict',
-        info: 'Username or email is already in use',
+        info: 'Name or email is already in use',
       },
     };
     handleError(newError, res);

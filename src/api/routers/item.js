@@ -6,7 +6,7 @@ const { ErrorHandler, handleError } = require('../../utils/error');
 const router = new express.Router();
 
 // Create an item
-router.post('/items', auth, async (req, res) => {
+router.post('/items', auth, async (req, res, next) => {
   try {
     if (!req.user.can('item:create')) {
       throw new ErrorHandler(403, 'User must be an admin');
@@ -15,9 +15,9 @@ router.post('/items', auth, async (req, res) => {
     const item = new Item(req.body);
     await item.save();
 
-    res.status(201).send('Item created successfully');
+    res.status(201).send();
   } catch (e) {
-    res.status(400).send(e);
+    next(e);
   }
 });
 
