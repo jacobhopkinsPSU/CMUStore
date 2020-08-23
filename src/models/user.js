@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+// const validator = require('validator');
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,11 +17,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       unique: true,
       // Make sure that email is real and has a school domain
-      validate(value) {
-        if (!validator.isEmail(value) || !value.match(/@s\.blackhawksd\.org/)) {
-          throw new Error('Email is invalid');
-        }
-      },
+      // validate(value) {
+      //   if (!validator.isEmail(value) || !value.match(/@s\.blackhawksd\.org/)) {
+      //     throw new Error('Email is invalid');
+      //   }
+      // },
     },
     // User password (will hash when saved)
     password: {
@@ -64,4 +64,4 @@ require('../methods/user')(userSchema);
 
 const User = mongoose.model('User', userSchema);
 
-exports.userModel = User;
+module.exports = User;

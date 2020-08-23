@@ -14,4 +14,11 @@ module.exports = function verTokenFunctions(verTokenSchema) {
 
     await token.save();
   };
+
+  schema.statics.findOld = async function findOld(userId) {
+    const VerToken = this;
+
+    const token = VerToken.findOne({ owner: userId });
+    token.deleteOne();
+  };
 };

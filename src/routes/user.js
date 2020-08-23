@@ -1,5 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
+const pug = require('pug');
+const path = require('path');
+
+const sendMail = require('../utils/mailer');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
 const auth = require('./middlewares/userAuth');
@@ -17,9 +21,9 @@ router.post('/users', async (req, res, next) => {
 
     // Try to save the user and add email verification token
     await user.save();
-
+    const token = await user.generateAuthToken();
     await VerToken.generateVerToken(user._id);
-    res.status(201).send();
+    res.status(201).send({ user, token });
   } catch (err) {
     next(err);
   }
@@ -61,21 +65,21 @@ router.post('/users/logout', auth, async (req, res, next) => {
 // Generate a new verification token
 router.post('/users/verify/generate', async (req, res, next) => {
   const { email } = req.body;
+
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
+    await VerToken.findOld(user._id);
+    const token = await VerToken.generateVerToken(user._id);
 
-    if (!user) {
-      throw new ErrorHandler(404, 'Invalid email');
-    }
-
-    const oldVerToken = await VerToken.findOne({ owner: user._id });
-    if (oldVerToken) {
-      oldVerToken.deleteOne();
-    }
-
-    VerToken.generateVerToken(user._id);
-
-    res.send();
+    sendMail({
+      from: process.env.NODEMAILER_EMAIL,
+      to: user.email,
+      subject: 'User Verification',
+      html: pug.renderFile(path.join(__dirname, '../views/email.pug'), {
+        user: user.name,
+        url: `${process.env.NODEMAILER_URL}/users/verify/${token.value}`,
+      }),
+    });
   } catch (err) {
     next(err);
   }
@@ -88,14 +92,14 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
     const token = await VerToken.findOne({ value: verToken });
 
     if (!token) {
-      res.render('pages/expired');
+      res.render('expired');
     } else {
       const user = await User.findOne({ _id: token.owner });
 
       user.role = 'verified';
       await user.save();
 
-      res.render('pages/verified', { user: user.name });
+      res.render('verified', { user: user.name });
     }
   } catch (err) {
     next(err);

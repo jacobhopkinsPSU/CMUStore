@@ -76,4 +76,14 @@ module.exports = function userFunction(userSchema) {
 
     return user;
   };
+
+  schema.statics.findByEmail = async function findByMail(email) {
+    const user = await this.findOne({ email });
+
+    if (!user) {
+      throw new ErrorHandler(400, 'No users exist with that email');
+    }
+
+    return user;
+  };
 };
