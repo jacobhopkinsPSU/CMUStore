@@ -7,11 +7,12 @@ const sendMail = require('../utils/mailer');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
 const auth = require('./middlewares/userAuth');
-const { handleError, ErrorHandler } = require('../utils/error');
+const { ErrorHandler } = require('../utils/error');
+const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const router = new express.Router();
 
-// Route to create a user
+// Create a user
 router.post('/users', async (req, res, next) => {
   try {
     const user = new User(req.body);
@@ -62,12 +63,14 @@ router.post('/users/logout', auth, async (req, res, next) => {
   }
 });
 
-// Generate a new verification token
+// Generate a new verification token and send it by email
 router.post('/users/verify/generate', async (req, res, next) => {
   const { email } = req.body;
 
   try {
     const user = await User.findByEmail(email);
+
+    // Find old tokens and delete them and then create a new one
     await VerToken.findOld(user._id);
     const token = await VerToken.generateVerToken(user._id);
 
@@ -106,37 +109,6 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
   }
 });
 
-// eslint-disable-next-line no-unused-vars
-router.use((err, req, res, next) => {
-  // Handle cases for duplicate entries and validation errors
-  if (err.message.indexOf('11000') !== -1) {
-    const newError = {
-      statusCode: 409,
-      message: {
-        type: 'conflict',
-        info: 'Name or email is already in use',
-      },
-    };
-    handleError(newError, res);
-  } else if (err.errors) {
-    // Create an array of messages and add each validation error to it
-    const valErrorArr = [];
-    Object.keys(err.errors).forEach((e) => {
-      valErrorArr.push({
-        type: e,
-        info: err.errors[e].properties.message,
-      });
-    });
-
-    const newError = {
-      statusCode: 400,
-      message: valErrorArr,
-    };
-
-    handleError(newError, res);
-  } else {
-    handleError(err, res);
-  }
-});
+router.use(errorMiddleware);
 
 module.exports = router;
