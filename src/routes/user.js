@@ -1,8 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
-const pug = require('pug');
 
-const createEmail = require('../utils/verEmail');
+const createEmail = require('../utils/emails/verEmail');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
 const auth = require('./middlewares/userAuth');
@@ -86,14 +85,14 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
     const token = await VerToken.findOne({ value: verToken });
 
     if (!token) {
-      pug.render('expired');
+      res.render('expired');
     } else {
       const user = await User.findOne({ _id: token.owner });
 
       user.role = 'verified';
       await user.save();
 
-      pug.render('verified', { user: user.name });
+      res.render('verified', { user: user.name });
     }
   } catch (err) {
     next(err);

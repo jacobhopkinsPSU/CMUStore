@@ -8,9 +8,9 @@ const createEmail = (email, name, token) => {
     from: process.env.NODEMAILER_EMAIL,
     to: email,
     subject: 'User Verification',
-    html: pug.renderFile(path.join(__dirname, '../views/email.pug'), {
+    html: pug.renderFile(path.join(__dirname, '../views/emails/email.pug'), {
       user: name,
-      url: `${process.env.NODEMAILER_URL}/users/verify/${token}`,
+      url: `${process.env.URL}/users/verify/${token}`,
     }),
   });
 };

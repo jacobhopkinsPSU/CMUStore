@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
-const { ErrorHandler } = require('./error');
+const { ErrorHandler } = require('../error');
 
 const { OAuth2 } = google.auth;
 
