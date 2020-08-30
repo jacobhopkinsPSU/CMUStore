@@ -1,9 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
 const pug = require('pug');
-const path = require('path');
 
-const sendMail = require('../utils/mailer');
+const createEmail = require('../utils/verEmail');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
 const auth = require('./middlewares/userAuth');
@@ -74,15 +73,7 @@ router.post('/users/verify/generate', async (req, res, next) => {
     await VerToken.findOld(user._id);
     const token = await VerToken.generateVerToken(user._id);
 
-    sendMail({
-      from: process.env.NODEMAILER_EMAIL,
-      to: user.email,
-      subject: 'User Verification',
-      html: pug.renderFile(path.join(__dirname, '../views/email.pug'), {
-        user: user.name,
-        url: `${process.env.NODEMAILER_URL}/users/verify/${token.value}`,
-      }),
-    });
+    createEmail(user.email, user.name, token.value);
   } catch (err) {
     next(err);
   }
@@ -95,14 +86,14 @@ router.get('/users/verify/:verToken', async (req, res, next) => {
     const token = await VerToken.findOne({ value: verToken });
 
     if (!token) {
-      res.render('expired');
+      pug.render('expired');
     } else {
       const user = await User.findOne({ _id: token.owner });
 
       user.role = 'verified';
       await user.save();
 
-      res.render('verified', { user: user.name });
+      pug.render('verified', { user: user.name });
     }
   } catch (err) {
     next(err);
