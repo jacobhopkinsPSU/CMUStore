@@ -1,3 +1,4 @@
+// TODO: Move to new email provider
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const { ErrorHandler } = require('../error');

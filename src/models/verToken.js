@@ -1,3 +1,4 @@
+// TODO: None
 const mongoose = require('mongoose');
 
 const verTokenSchema = new mongoose.Schema({

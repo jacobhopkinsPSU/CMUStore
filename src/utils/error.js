@@ -1,3 +1,4 @@
+// TODO: None
 class ErrorHandler extends Error {
   constructor(statusCode, message) {
     super();

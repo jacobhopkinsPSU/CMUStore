@@ -1,3 +1,5 @@
+// TODO: add image upload functionality. Display items with pagination. Maybe search functionality.
+
 const express = require('express');
 const auth = require('./middlewares/userAuth');
 const Item = require('../models/item');

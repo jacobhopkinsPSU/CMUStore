@@ -1,9 +1,10 @@
+// TODO: Improve ver email
 const pug = require('pug');
 const path = require('path');
 
 const sendMail = require('./mailer');
 
-const createEmail = (email, name, token) => {
+const createVerEmail = (email, name, token) => {
   sendMail({
     from: process.env.NODEMAILER_EMAIL,
     to: email,
@@ -15,4 +16,4 @@ const createEmail = (email, name, token) => {
   });
 };
 
-module.exports = createEmail;
+module.exports = createVerEmail;

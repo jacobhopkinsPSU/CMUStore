@@ -1,3 +1,4 @@
+// TODO: Move to https
 const express = require('express');
 const path = require('path');
 
@@ -9,7 +10,7 @@ const itemRouter = require('./routes/item');
 const app = express();
 const port = process.env.PORT;
 
-// Set up ejs as the view engine
+// Set up pug as the view engine
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 

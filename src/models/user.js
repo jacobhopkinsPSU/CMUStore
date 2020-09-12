@@ -1,3 +1,4 @@
+// TODO: Reenable email validator
 const mongoose = require('mongoose');
 // const validator = require('validator');
 

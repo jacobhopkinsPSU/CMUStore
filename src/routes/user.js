@@ -1,7 +1,8 @@
+// TODO: Add delete account route? Add patch route for user data.
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
 
-const createEmail = require('../utils/emails/verEmail');
+const createVerEmail = require('../utils/emails/verEmail');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
 const auth = require('./middlewares/userAuth');
@@ -61,6 +62,17 @@ router.post('/users/logout', auth, async (req, res, next) => {
   }
 });
 
+router.get('/users/logoutall', auth, async (req, res, next) => {
+  try {
+    req.user.tokens = [];
+    await req.user.save();
+
+    res.send();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Generate a new verification token and send it by email
 router.post('/users/verify/generate', async (req, res, next) => {
   const { email } = req.body;
@@ -72,7 +84,7 @@ router.post('/users/verify/generate', async (req, res, next) => {
     await VerToken.findOld(user._id);
     const token = await VerToken.generateVerToken(user._id);
 
-    createEmail(user.email, user.name, token.value);
+    createVerEmail(user.email, user.name, token.value);
   } catch (err) {
     next(err);
   }
