@@ -19,6 +19,13 @@ const itemSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  images: [
+    {
+      imageName: {
+        type: String,
+      },
+    },
+  ],
 });
 
 const Item = mongoose.model('Item', itemSchema);
