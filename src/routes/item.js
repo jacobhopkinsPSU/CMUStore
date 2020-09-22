@@ -3,9 +3,10 @@ const express = require('express');
 const crypto = require('crypto');
 const path = require('path');
 const multer = require('multer');
+const mongoose = require('mongoose');
 const GridFsStorage = require('multer-gridfs-storage');
 
-const connection = require('../mongoose/index');
+const conn = require('../mongoose/index');
 const userAuth = require('./middlewares/userAuth');
 const uploadAuth = require('./middlewares/uploadAuth');
 const Item = require('../models/item');
@@ -14,12 +15,19 @@ const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const router = new express.Router();
 
+let gfs;
+
+conn.once('open', () => {
+  gfs = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: 'imageUpload',
+  });
+});
+
 const storage = new GridFsStorage({
-  db: connection,
+  db: conn,
   file: (req, file) => {
     // Generate random name with crypto and maintain extension
-    const random = crypto.randomBytes(16).toString('hex');
-    const filename = random + path.extname(file.originalname);
+    const filename = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
 
     return {
       filename,
@@ -53,7 +61,7 @@ router.post(
   '/items/upload/:id',
   userAuth,
   uploadAuth,
-  upload.any(),
+  upload.any('image'),
   async (req, res, next) => {
     const { files } = req;
     try {
@@ -73,6 +81,12 @@ router.post(
     }
   },
 );
+
+router.get('/items/image', (req, res) => {
+  gfs.find().toArray((err, files) => {
+    console.log(files);
+  });
+});
 
 router.use(errorMiddleware);
 

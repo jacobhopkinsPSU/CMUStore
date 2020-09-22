@@ -4,6 +4,7 @@ const { ErrorHandler } = require('../../utils/error');
 const userAuth = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     const item = await Item.findById(id);
 
     if (!item) {
