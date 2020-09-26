@@ -1,3 +1,4 @@
+// TODO: None
 const Item = require('../../models/item');
 const { ErrorHandler } = require('../../utils/error');
 
@@ -12,7 +13,6 @@ const userAuth = async (req, res, next) => {
     }
 
     req.item = item;
-
     next();
   } catch (e) {
     next(e);

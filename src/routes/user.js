@@ -32,10 +32,7 @@ router.post('/users', async (req, res, next) => {
 // Login user and create a new JWT
 router.post('/users/login', async (req, res, next) => {
   try {
-    const user = await User.findByCredentials(
-      req.body.email,
-      req.body.password,
-    );
+    const user = await User.findByCredentials(req.body.email, req.body.password);
 
     if (!user.can('user:login')) {
       throw new ErrorHandler(403, 'User does not have permission.');
@@ -51,9 +48,7 @@ router.post('/users/login', async (req, res, next) => {
 // Logout the user and get rid of the current JWT
 router.post('/users/logout', auth, async (req, res, next) => {
   try {
-    req.user.tokens = req.user.tokens.filter(
-      (token) => token.token !== req.token,
-    );
+    req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
     await req.user.save();
 
     res.send();

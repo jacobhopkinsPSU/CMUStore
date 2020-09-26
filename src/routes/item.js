@@ -1,41 +1,16 @@
 // TODO: Display items with pagination. Maybe search functionality.
 const express = require('express');
-const crypto = require('crypto');
-const path = require('path');
 const multer = require('multer');
-const mongoose = require('mongoose');
-const GridFsStorage = require('multer-gridfs-storage');
 
-const conn = require('../mongoose/index');
 const userAuth = require('./middlewares/userAuth');
-const uploadAuth = require('./middlewares/uploadAuth');
+const itemAuth = require('./middlewares/itemAuth');
 const Item = require('../models/item');
 const { ErrorHandler } = require('../utils/error');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const router = new express.Router();
 
-let gfs;
-
-conn.once('open', () => {
-  gfs = new mongoose.mongo.GridFSBucket(conn.db, {
-    bucketName: 'imageUpload',
-  });
-});
-
-const storage = new GridFsStorage({
-  db: conn,
-  file: (req, file) => {
-    // Generate random name with crypto and maintain extension
-    const filename = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
-
-    return {
-      filename,
-      bucketName: 'imageUpload',
-    };
-  },
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Create an item
@@ -60,7 +35,7 @@ router.post('/items', userAuth, async (req, res, next) => {
 router.post(
   '/items/upload/:id',
   userAuth,
-  uploadAuth,
+  itemAuth,
   upload.any('image'),
   async (req, res, next) => {
     const { files } = req;
@@ -81,12 +56,6 @@ router.post(
     }
   },
 );
-
-router.get('/items/image', (req, res) => {
-  gfs.find().toArray((err, files) => {
-    console.log(files);
-  });
-});
 
 router.use(errorMiddleware);
 
