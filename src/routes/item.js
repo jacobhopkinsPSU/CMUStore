@@ -1,6 +1,7 @@
 // TODO: Display items with pagination. Maybe search functionality.
 const express = require('express');
 const multer = require('multer');
+const sharp = require('sharp');
 const crypto = require('crypto');
 const path = require('path');
 const AWS = require('aws-sdk');
@@ -12,12 +13,15 @@ const { ErrorHandler } = require('../utils/error');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const router = new express.Router();
+
+// Configure AWS
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_ID,
   secretAccessKey: process.env.AWS_SECRET,
 });
 const S3 = new AWS.S3();
 
+// Configure Multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -40,6 +44,7 @@ router.post('/items', userAuth, async (req, res, next) => {
   }
 });
 
+// Upload an image to S3 bucket
 router.post(
   '/items/upload/:id',
   userAuth,
@@ -52,16 +57,17 @@ router.post(
         throw new ErrorHandler(400, 'Must upload files');
       }
 
-      let imageName;
-
       files.forEach((file) => {
-        imageName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
-        req.item.images = req.item.images.concat({ imageName });
+        // Create image name
+        const imageName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
+
+        // Resize image and convert to png
+        const buffer = sharp(file.buffer).resize({ width: 512, height: 512 }).png().toBuffer();
 
         const params = {
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: imageName,
-          Body: file.buffer,
+          Body: buffer,
         };
 
         S3.upload(params, (err) => {
@@ -69,6 +75,8 @@ router.post(
             throw new ErrorHandler(500, 'Unable to connect to AWS');
           }
         });
+
+        req.item.images = req.item.images.concat({ imageName });
       });
 
       await req.item.save();
