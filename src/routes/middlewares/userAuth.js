@@ -15,7 +15,7 @@ const auth = async (req, res, next) => {
     });
 
     if (!user) {
-      throw new ErrorHandler(401, 'User must be authenticated');
+      throw new ErrorHandler(401, 'User must be logged in');
     }
 
     req.token = token;

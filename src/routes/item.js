@@ -93,7 +93,7 @@ router.get('/items/group', userAuth, async (req, res, next) => {
   const { page = 1, limit = 8 } = req.query;
 
   if (!req.user.can('item:view')) {
-    throw new ErrorHandler(403, 'User does not have permissions');
+    throw new ErrorHandler(401, 'User does not have permission');
   }
 
   try {
@@ -118,10 +118,14 @@ router.get('/items/search', userAuth, async (req, res, next) => {
   const { search = '', page = 1, limit = 8 } = req.query;
 
   if (!req.user.can('item:view')) {
-    throw new ErrorHandler(403, 'User does not have permissions');
+    throw new ErrorHandler(401, 'User does not have permissions');
   }
 
   try {
+    if (search.match(new RegExp(/^\$(\w+)/))) {
+      throw new ErrorHandler(400, 'Search input is invalid');
+    }
+
     const items = await Item.find({ name: new RegExp(`${search}`) })
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -147,11 +151,11 @@ router.patch('/items/:id', userAuth, itemAuth, async (req, res, next) => {
 
   try {
     if (!isValidOperation) {
-      throw new ErrorHandler(400, 'Update fields are not vallid');
+      throw new ErrorHandler(400, 'Update fields are invalid');
     }
 
     if (!req.user.can('item:modify')) {
-      throw new ErrorHandler(403, 'User does not have permissions');
+      throw new ErrorHandler(403, 'User must be an admin');
     }
 
     updates.forEach((update) => {
@@ -170,7 +174,7 @@ router.delete('/items/:id', userAuth, itemAuth, async (req, res, next) => {
     if (req.user.can('item:modify')) {
       await req.item.remove();
     } else {
-      throw new ErrorHandler(403, 'User does not have permissions');
+      throw new ErrorHandler(403, 'User must be an admin');
     }
     res.send();
   } catch (e) {
