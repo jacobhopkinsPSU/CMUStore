@@ -57,6 +57,10 @@ router.post(
         throw new ErrorHandler(400, 'Must upload files');
       }
 
+      if (!req.user.can('item:modify')) {
+        throw new ErrorHandler(403, 'User does not have permissions');
+      }
+
       files.forEach((file) => {
         // Create image name
         const imageName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
@@ -122,6 +126,10 @@ router.get('/items/search', userAuth, async (req, res, next) => {
   }
 
   try {
+    if (search.match(new RegExp(/(^\$|(?<=\s)\$\w+)/))) {
+      throw new ErrorHandler(400, 'Search input is invalid');
+    }
+
     const items = await Item.find({ name: new RegExp(`${search}`) })
       .limit(limit * 1)
       .skip((page - 1) * limit)
