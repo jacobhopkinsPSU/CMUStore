@@ -122,7 +122,7 @@ router.get('/items/search', userAuth, async (req, res, next) => {
   }
 
   try {
-    if (search.match(new RegExp(/^\$(\w+)/))) {
+    if (search.match(new RegExp(/(^\$|(?<=\s)\$\w+)/))) {
       throw new ErrorHandler(400, 'Search input is invalid');
     }
 
