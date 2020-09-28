@@ -122,10 +122,6 @@ router.get('/items/search', userAuth, async (req, res, next) => {
   }
 
   try {
-    if (search.match(new RegExp(/(^\$|(?<=\s)\$\w+)/))) {
-      throw new ErrorHandler(400, 'Search input is invalid');
-    }
-
     const items = await Item.find({ name: new RegExp(`${search}`) })
       .limit(limit * 1)
       .skip((page - 1) * limit)
