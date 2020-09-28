@@ -1,4 +1,4 @@
-// TODO: Display items with pagination. Maybe search functionality.
+// TODO: None
 const express = require('express');
 const multer = require('multer');
 const sharp = require('sharp');
@@ -46,7 +46,7 @@ router.post('/items', userAuth, async (req, res, next) => {
 
 // Upload an image to S3 bucket
 router.post(
-  '/items/upload/:id',
+  '/items/images/:id',
   userAuth,
   itemAuth,
   upload.any('image'),
@@ -87,6 +87,96 @@ router.post(
     }
   },
 );
+
+// Get list of items in paginated form
+router.get('/items/group', userAuth, async (req, res, next) => {
+  const { page = 1, limit = 8 } = req.query;
+
+  if (!req.user.can('item:view')) {
+    throw new ErrorHandler(403, 'User does not have permissions');
+  }
+
+  try {
+    const items = await Item.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Item.countDocuments();
+
+    res.send({
+      items,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/items/search', userAuth, async (req, res, next) => {
+  const { search = '', page = 1, limit = 8 } = req.query;
+
+  if (!req.user.can('item:view')) {
+    throw new ErrorHandler(403, 'User does not have permissions');
+  }
+
+  try {
+    const items = await Item.find({ name: new RegExp(`${search}`) })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Item.countDocuments();
+
+    res.send({
+      items,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Change values of item if user can be verified as an admin
+router.patch('/items/:id', userAuth, itemAuth, async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ['name', 'description', 'category'];
+  const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+
+  try {
+    if (!isValidOperation) {
+      throw new ErrorHandler(400, 'Update fields are not vallid');
+    }
+
+    if (!req.user.can('item:modify')) {
+      throw new ErrorHandler(403, 'User does not have permissions');
+    }
+
+    updates.forEach((update) => {
+      req.item[update] = req.body[update];
+    });
+    await req.item.save();
+    res.send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Delete item if a user can be verified as an admin
+router.delete('/items/:id', userAuth, itemAuth, async (req, res, next) => {
+  try {
+    if (req.user.can('item:modify')) {
+      await req.item.remove();
+    } else {
+      throw new ErrorHandler(403, 'User does not have permissions');
+    }
+    res.send();
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.use(errorMiddleware);
 

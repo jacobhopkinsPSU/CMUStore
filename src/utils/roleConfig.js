@@ -5,10 +5,10 @@ const roleDefs = {
     can: [],
   },
   verified: {
-    can: ['item:purchase', 'user:login'],
+    can: ['item:purchase', 'item:view', 'user:login'],
   },
   admin: {
-    can: ['item:purchase', 'user:login', 'item:modify', 'item:create'],
+    can: ['item:purchase', 'item:view', 'item:modify', 'item:create', 'user:login'],
   },
 };
 

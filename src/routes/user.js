@@ -1,11 +1,11 @@
-// TODO: Add delete account route? Add patch route for user data.
+// TODO: None
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
 
 const createVerEmail = require('../utils/emails/verEmail');
 const User = require('../models/user');
 const VerToken = require('../models/verToken');
-const auth = require('./middlewares/userAuth');
+const userAuth = require('./middlewares/userAuth');
 const { ErrorHandler } = require('../utils/error');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
@@ -46,7 +46,7 @@ router.post('/users/login', async (req, res, next) => {
 });
 
 // Logout the user and get rid of the current JWT
-router.post('/users/logout', auth, async (req, res, next) => {
+router.post('/users/logout', userAuth, async (req, res, next) => {
   try {
     req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
     await req.user.save();
@@ -57,7 +57,7 @@ router.post('/users/logout', auth, async (req, res, next) => {
   }
 });
 
-router.get('/users/logoutall', auth, async (req, res, next) => {
+router.get('/users/logoutall', userAuth, async (req, res, next) => {
   try {
     req.user.tokens = [];
     await req.user.save();
@@ -82,6 +82,15 @@ router.post('/users/verify/generate', async (req, res, next) => {
     createVerEmail(user.email, user.name, token.value);
   } catch (err) {
     next(err);
+  }
+});
+
+router.delete('/users/', userAuth, async (req, res, next) => {
+  try {
+    await req.user.remove();
+    res.send();
+  } catch (e) {
+    next(e);
   }
 });
 
