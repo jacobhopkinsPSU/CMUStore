@@ -23,7 +23,7 @@ router.post('/users', async (req, res, next) => {
     await user.save();
     const token = await user.generateAuthToken();
     await VerToken.generateVerToken(user._id);
-    res.status(201).send({ user, token });
+    res.status(201).send({ token });
   } catch (err) {
     next(err);
   }

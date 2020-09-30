@@ -4,6 +4,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const path = require('path');
+const async = require('async');
 const AWS = require('aws-sdk');
 
 const userAuth = require('./middlewares/userAuth');
@@ -61,29 +62,33 @@ router.post(
         throw new ErrorHandler(403, 'User does not have permissions');
       }
 
-      files.forEach((file) => {
-        // Create image name
-        const imageName = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
+      async
+        .eachSeries(files, async (file) => {
+          // Create image name
+          const name = crypto.randomBytes(16).toString('hex') + path.extname(file.originalname);
 
-        // Resize image and convert to png
-        const buffer = sharp(file.buffer).resize({ width: 512, height: 512 }).png().toBuffer();
+          // Resize image and convert to png
+          const buffer = await sharp(file.buffer)
+            .resize({ width: 512, height: 512 })
+            .png()
+            .toBuffer();
 
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: imageName,
-          Body: buffer,
-        };
+          const params = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: name,
+            Body: buffer,
+          };
 
-        S3.upload(params, (err) => {
-          if (err) {
-            throw new ErrorHandler(500, 'Unable to connect to AWS');
-          }
+          S3.upload(params, (err) => {
+            if (err) {
+              throw new ErrorHandler(500, 'Unable to connect to AWS');
+            }
+          });
+          req.item.images = req.item.images.concat({ imageName: name });
+        })
+        .then(async () => {
+          await req.item.save();
         });
-
-        req.item.images = req.item.images.concat({ imageName });
-      });
-
-      await req.item.save();
 
       res.status(201).send();
     } catch (e) {
